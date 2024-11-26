@@ -12,7 +12,7 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         <Image
-          src="/hero-background.gif"
+          src="/images/hero.jpg"
           alt="Animated medical background"
           layout="fill"
           objectFit="cover"

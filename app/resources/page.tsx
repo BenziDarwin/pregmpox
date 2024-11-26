@@ -6,10 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { FileText, BookOpen, FileCheck, FileCode, FileLock, Search } from 'lucide-react'
+import { FileText, BookOpen, FileCheck, FileCode, FileLock, Search, Menu } from 'lucide-react'
 
 export default function Resources() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [activeTab, setActiveTab] = useState('publications')
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,14 +58,28 @@ export default function Resources() {
         </form>
       </motion.div>
       
-      <Tabs defaultValue="publications" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
-          <TabsTrigger value="publications">Publications</TabsTrigger>
-          <TabsTrigger value="facts">Facts & Figures</TabsTrigger>
-          <TabsTrigger value="protocols">Protocols</TabsTrigger>
-          <TabsTrigger value="sops">SOPs</TabsTrigger>
-          <TabsTrigger value="policies">Policy Documents</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="hidden md:grid w-full md:grid-cols-5 gap-2 p-1">
+          <TabsTrigger value="publications" className="w-full">Publications</TabsTrigger>
+          <TabsTrigger value="facts" className="w-full">Facts & Figures</TabsTrigger>
+          <TabsTrigger value="protocols" className="w-full">Protocols</TabsTrigger>
+          <TabsTrigger value="sops" className="w-full">SOPs</TabsTrigger>
+          <TabsTrigger value="policies" className="w-full">Policy Documents</TabsTrigger>
         </TabsList>
+        
+        <div className="md:hidden">
+          <select 
+            className="w-full p-2 bg-muted rounded-md mb-4"
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
+          >
+            <option value="publications">Publications</option>
+            <option value="facts">Facts & Figures</option>
+            <option value="protocols">Protocols</option>
+            <option value="sops">SOPs</option>
+            <option value="policies">Policy Documents</option>
+          </select>
+        </div>
         <TabsContent value="publications">
           <ResourceSection
             title="Publications"
