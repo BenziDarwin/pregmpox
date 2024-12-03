@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FileText, BookOpen, FileCheck, FileCode, FileLock, Search, Menu } from 'lucide-react'
+import axios from 'axios'
 
 export default function Resources() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -85,6 +86,7 @@ export default function Resources() {
             title="Publications"
             description="Access our latest research publications and findings on pregnancy and mpox."
             icon={<FileText className="h-8 w-8 text-primary" />}
+            resourceType="publication"
           />
         </TabsContent>
         <TabsContent value="facts">
@@ -92,6 +94,7 @@ export default function Resources() {
             title="Facts & Figures"
             description="Explore key statistics and data related to pregnancy and mpox research."
             icon={<BookOpen className="h-8 w-8 text-primary" />}
+            resourceType="facts"
           />
         </TabsContent>
         <TabsContent value="protocols">
@@ -99,6 +102,7 @@ export default function Resources() {
             title="Protocols"
             description="Find standardized research protocols for studying pregnancy and mpox."
             icon={<FileCheck className="h-8 w-8 text-primary" />}
+            resourceType="protocols"
           />
         </TabsContent>
         <TabsContent value="sops">
@@ -106,6 +110,7 @@ export default function Resources() {
             title="Standard Operating Procedures"
             description="Access our collection of SOPs for consistent research practices."
             icon={<FileCode className="h-8 w-8 text-primary" />}
+            resourceType="sops"
           />
         </TabsContent>
         <TabsContent value="policies">
@@ -113,6 +118,7 @@ export default function Resources() {
             title="Policy Documents"
             description="Review our policy guidelines and recommendations for pregnancy and mpox research."
             icon={<FileLock className="h-8 w-8 text-primary" />}
+            resourceType="policies"
           />
         </TabsContent>
       </Tabs>
@@ -124,11 +130,34 @@ interface ResourceSectionProps {
   title: string;
   description: string;
   icon: React.ReactNode;
+  resourceType: string;
 }
 
-function ResourceSection({ title, description, icon }: ResourceSectionProps) {
+function ResourceSection({ title, description, icon, resourceType }: ResourceSectionProps) {
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_DRUPAL_API_URL}/jsonapi/node/page`);
+        const filteredResources = response.data.data.filter((page: any) => 
+          page.attributes.title.toLowerCase().includes(resourceType.toLowerCase())
+        );
+        setResources(filteredResources);
+        setLoading(false);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        setLoading(false);
+      }
+    };
+
+    fetchResources();
+  }, [resourceType]);
+
   return (
-    <Card className="mt-6">
+    <Card className="my-6">
       <CardHeader>
         <div className="flex items-center space-x-4">
           {icon}
@@ -137,7 +166,20 @@ function ResourceSection({ title, description, icon }: ResourceSectionProps) {
       </CardHeader>
       <CardContent>
         <CardDescription>{description}</CardDescription>
-        <p className="mt-4">Content for this section will be dynamically loaded from the Drupal CMS.</p>
+        {loading && <p className="mt-4">Loading resources...</p>}
+        {error && <p className="mt-4 text-red-500">Error loading resources: {error}</p>}
+        {!loading && !error && (
+          <div className="mt-4 space-y-4">
+            {resources.map((resource: any) => (
+              <div key={resource.id} className="p-4 border rounded-lg">
+                <div 
+                  dangerouslySetInnerHTML={{ __html: resource.attributes.body?.value || '' }}
+                  className="[&>*]:all-revert"
+                />
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   )
